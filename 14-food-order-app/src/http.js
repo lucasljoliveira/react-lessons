@@ -1,25 +1,51 @@
-export async function fetchMeals(){
-    const response = await fetch("http://localhost:3000/meals")
-    
-    if (!response.ok) {
-        throw new Error("Failed to fetch Meals.");
-    };
-    const data = await response.json()
+import { useCallback, useEffect, useState } from "react";
 
-    return data;
+async function sendHttpRequest(url, config){
+    const response = await fetch(url, config);
+    const responseData = await response.json();
+
+    if (!response.ok){
+        throw new Error(
+            responseData.message || "Something went wrong, failed to send request."
+        );
+    }
+
+    return responseData
 }
 
-export async function postOrder(body){
-    const response = await fetch("http://localhost:3000/orders", {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: {"Content-Type": "application/json"}
-    })
-    
-    if (!response.ok) {
-        throw new Error("Failed to post the Order.");
-    };
-    const data = await response.json()
-    
-    return data;
+export default function useHttp(url, config, defaultData){
+    const [data, setData] = useState(defaultData);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState();
+
+    function clearData(){
+        setData(defaultData)
+    }
+
+    const sendRequest = useCallback(
+        async function sendRequest(data) {
+            setIsLoading(true);
+            try {
+                const resultData = await sendHttpRequest(url, {...config, body: data});
+                setData(resultData);
+            } catch (error) {
+                setError(error.message || "Something went wrong!")
+            }
+            setIsLoading(false)
+        }, [url, config]
+    )
+
+    useEffect(() => {
+        if (!config || config && (config.method === "GET" || !config.method)) {
+            sendRequest();
+        }
+    }, [sendRequest, config])
+
+    return {
+        data,
+        isLoading,
+        error,
+        sendRequest,
+        clearData
+    }
 }

@@ -1,14 +1,10 @@
 import { createContext, useReducer } from "react"; 
-import useFetch from "../hooks/useFetch";
-import { fetchMeals } from "../http";
-
 
 export const StoreContext = createContext({
     cart: {
         items: [],
         customer: {}
     },
-    meals: [],
     addItemToCart: () => {},
     removeItemFromCart: () => {},
     clearItems: () => {}
@@ -19,19 +15,18 @@ function storeContextReducer(state, action) {
     let items = [...state.items];
 
     if (action.type === 'ADD_ITEM'){
-        const meal_id = action.payload.id;
+        const meal = action.payload.meal;
         
-        const actualItem = items.find((item) => item.id === meal_id)
+        const actualItem = items.find((item) => item.id === meal.id)
         if (actualItem) {
-            const actualItemIndex = items.findIndex((item) => item.id == meal_id)
+            const actualItemIndex = items.findIndex((item) => item.id == meal.id)
             items[actualItemIndex] = {
                 ...actualItem,
                 quantity: actualItem.quantity + 1
             }
         }
         else {
-            const meals = [...action.payload.meals]
-            const meal = meals.find((item) => item.id === meal_id)
+            const meal = action.payload.meal
             items.push({
                 id: meal.id,
                 meal: meal,
@@ -40,14 +35,17 @@ function storeContextReducer(state, action) {
         }
     }
     if (action.type === 'REMOVE_ITEM'){
-        const meal_id = action.payload.id
-        const actualItem = items.find((item) => item.id == meal_id)
-        const actualItemIndex = items.findIndex((item) => item.id == meal_id)
+        const meal = action.payload.meal
+        const actualItem = items.find((item) => item.id == meal.id)
+        const actualItemIndex = items.findIndex((item) => item.id == meal.id)
         if (actualItem.quantity > 1){
             items[actualItemIndex] = {
                 ...actualItem,
                 quantity: actualItem.quantity -1
             }
+        }
+        else if (actualItem.quantity === 1) {
+            items = items.filter((item, index) => index !== actualItemIndex)
         }
         else {
             items.slice(actualItemIndex, 1)
@@ -60,23 +58,19 @@ function storeContextReducer(state, action) {
 }
 
 export default function StoreContextProvider({ children }) {
-    const {
-        data: meals
-      } = useFetch([], fetchMeals);
-
     const [storeState, storeStateDispatch] = useReducer(storeContextReducer, {items: []})
 
-    function addItemToCart(id){
+    function addItemToCart(meal){
         storeStateDispatch({
             type: "ADD_ITEM",
-            payload: {id: id, meals: meals}
+            payload: {meal: meal}
         })
     }
     
-    function removeItemFromCart(id){
+    function removeItemFromCart(meal){
         storeStateDispatch({
             type: "REMOVE_ITEM",
-            payload: {id: id, meals: meals}
+            payload: {meal: meal}
         })
     }
     
@@ -92,7 +86,6 @@ export default function StoreContextProvider({ children }) {
             items: storeState.items,
             customer: {}
         },
-        meals: meals,
         addItemToCart,
         removeItemFromCart,
         clearItems

@@ -1,21 +1,33 @@
 import { useContext, useState } from "react";
-import { forwardRef, useImperativeHandle, useRef } from "react"
-import { postOrder } from "../http";
+import { useImperativeHandle, useRef } from "react"
+import useHttp from "../http";
 import { hasMinLength, isEmail, isNotEmpty } from "../util/validation";
 import { StoreContext } from "../store/StoreContext";
 import { createPortal } from "react-dom";
+import Input from "./Input";
+import Button from "./UI/Button";
+import Error from "./Error";
+import Modal from "./UI/Modal";
+import { CartProgressContext } from "../store/CartContext";
 
-const Checkout = forwardRef(function Checkout({onFinishCheckout, ...props}, ref) {
-    const checkoutRef = useRef();
-    const { cart } = useContext(StoreContext);
+const requestConfig = {
+    method: "POST",
+    headers: {"Content-Type": "application/json"}
+}
 
-    useImperativeHandle(ref, () => {
-        return {
-            open() {
-                checkoutRef.current.showModal()
-            }
-        }
-    });
+export default function Checkout({...props}) {
+    const { cart, clearItems } = useContext(StoreContext);
+    const { progress: cartProgress, hideCheckout } = useContext(CartProgressContext);
+    const [dataIsNotValid, setDataIsNotValid] = useState(false);
+
+    const {
+        data,
+        isLoading: isSending,
+        error,
+        sendRequest,
+        clearData: clearCheckoutData
+    } = useHttp("http://localhost:3000/orders", requestConfig, null)
+
 
     function handleSubmitOrder(event){
         event.preventDefault();
@@ -29,60 +41,77 @@ const Checkout = forwardRef(function Checkout({onFinishCheckout, ...props}, ref)
         const emailIsInvalid = !isNotEmpty(customer.email) || !isEmail(customer.email);
         const postalCodeIsInvalid = !isNotEmpty(customer["postal-code"]);
         if (nameIsInvalid || cityIsInvalid || streetIsInvalid || emailIsInvalid || postalCodeIsInvalid){
-            console.log("invalid")
+            setDataIsNotValid(true)
             return
         }
+        setDataIsNotValid(false)
 
-        const order = {order: {
-            customer: customer,
-            items: cart.items
-        }}
-        console.log(order)
-
-        postOrder(order);
-
-        onFinishCheckout();
-
-        checkoutRef.current.close()
-
+        const order = {
+            order: {
+                customer: customer,
+                items: cart.items
+            }
+        }
+        
+        sendRequest(JSON.stringify(order))
     }
 
-    return createPortal(
-        <dialog ref={checkoutRef} className="modal">
+    function handleFinish(){
+        clearItems()
+        hideCheckout()
+        clearCheckoutData()
+    }
+
+    let actions = (
+        <>
+            <Button type="button" textOnly onClick={hideCheckout} >Close</Button>
+            <Button type="submit" >Submit Order</Button>
+        </>
+    )
+    
+    if (isSending){
+        actions = <span>Sending data...</span>
+    }
+
+    if (error) {
+        actions = <>
+            <Error title="Failed to send order." message={error}></Error>
+            <Button type="button" textOnly onClick={hideCheckout} >Close</Button>
+        </>
+    }
+
+
+    if (data && !error) {
+        return (
+            <Modal open={cartProgress === "checkout"} onClose={handleFinish}>
+                <h2>Success!!!</h2>
+                <p>Your order was submitted successfully.</p>
+                <p className="modal-actions">
+                    <Button type="button" textOnly onClick={handleFinish} >Close</Button>
+                </p>
+            </Modal>
+        )
+    };
+
+    return (
+        <Modal open={cartProgress === "checkout"}>
             <h2>Checkout</h2>
             <p>Total Amount ${cart.items.reduce((partialSum, item) => partialSum + (item.quantity * item.meal.price), 0).toFixed(2)}</p>
             <form method="dialog" onSubmit={handleSubmitOrder}>
-                <ol>
-                    <li className="control">
-                        <label htmlFor="name">Full Name</label>
-                        <input id="name" name="name" required/>
-                    </li>
-
-                    <li className="control">
-                        <label htmlFor="email">E-Mail Address</label>
-                        <input id="email" name="email" required/>
-                    </li>
-
-                    <li className="control">
-                        <label htmlFor="postalcode">Postal Code</label>
-                        <input id="postal-code" name="postal-code" required/>
-                    </li>
-                    <li className="control">
-                        <label htmlFor="street">Street</label>
-                        <input id="street" name="street" required/>
-                    </li>
-                    <li className="control">
-                        <label htmlFor="city">City</label>
-                        <input id="city" name="city" required/>
-                    </li>
-                </ol>
-                <div>
-                    <button type="button" className="text-button" onClick={() => checkoutRef.current.close()}><strong>Close</strong></button>
-                    <button type="submit" className="button">Submit Order</button>
+                <Input label="Full Name" type="text" id="name"/>
+                <Input label="E-Mail Address" type="text" id="email"/>
+                <Input label="Street" type="text" id="street"/>
+                <div className="control-row">
+                    <Input label="Postal Code" type="text" id="postal-code"/>
+                    <Input label="City" type="text" id="city"/>
+                </div>
+                <p className="modal-actions">
+                    {actions}
+                </p>
+                <div className="control-error">
+                    {dataIsNotValid && <p>Check the inputs and make sure that everything is correct.</p>}
                 </div>
             </form>
-        </dialog>, document.getElementById('modal')
+        </Modal>
     )
-})
-
-export default Checkout;
+}

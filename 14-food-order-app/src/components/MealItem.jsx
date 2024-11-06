@@ -16,7 +16,7 @@ const MealItem = memo(function MealItem({meal, ...props}) {
                 <p id="meal-item-description">{meal.description}</p>
             </div>
             <p className="meal-item-actions">
-                <Button onClick={() => addItemToCart(meal.id)} >AddToCart</Button>
+                <Button onClick={() => addItemToCart(meal)} >AddToCart</Button>
             </p>
         </article>
     </li>

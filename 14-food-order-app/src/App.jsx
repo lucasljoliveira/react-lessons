@@ -1,12 +1,15 @@
 import Store from "./components/Store";
 import StoreContextProvider from "./store/StoreContext";
+import { CartProgressContextProvider } from "./store/CartContext";
 
 
 function App() {
   return (
-    <StoreContextProvider>
-      <Store />
-    </StoreContextProvider>
+    <CartProgressContextProvider>
+      <StoreContextProvider>
+        <Store />
+      </StoreContextProvider>
+    </CartProgressContextProvider>
   );
 }
 
