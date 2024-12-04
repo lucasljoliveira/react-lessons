@@ -22,23 +22,36 @@
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import EventsPage from './pages/EventsPage';
-import EventDetailPage from './pages/EventDetailPage';
+import EventsPage, { loader as eventsLoader } from './pages/Events';
+import EventDetailPage, { loader as eventDetailLoader, action as eventDeleteAction } from './pages/EventDetailPage';
 import NewEventPage from './pages/NewEventPage';
 import EditEventPage from './pages/EditEventPage';
 import RootLayout from './components/RootLayout';
-// import EventsNavigation from './components/EventsNavigation';
+import { action as manipulatedEventAction } from './components/EventForm'
+import EventRootLayout from './components/EventRootLayout';
+import Error from './pages/Error';
+import NewsletterPage, { action as newsletterAction } from './pages/Newsletter';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <Error />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "events", element: <EventsPage /> },
-      { path: "events/:id", element: <EventDetailPage /> },
-      { path: "events/new", element: <NewEventPage /> },
-      { path: "events/:id/edit", element: <EditEventPage /> },
+      { path: "events", element: <EventRootLayout />, children: [
+        { index: true, element: <EventsPage />, loader: eventsLoader },
+        { path: ":id", id: "event-detail", loader: eventDetailLoader, children: [
+          { index: true, element: <EventDetailPage />, action: eventDeleteAction },
+          { path: "edit", element: <EditEventPage />, action: manipulatedEventAction },
+        ]},
+        { path: "new", element: <NewEventPage />, action: manipulatedEventAction },
+      ]},
+      {
+        path: 'newsletter',
+        element: <NewsletterPage />,
+        action: newsletterAction,
+      },
     ]
   },
 ])

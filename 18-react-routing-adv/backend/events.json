@@ -1,11 +1,1 @@
-{
-  "events": [
-    {
-      "id": "e1",
-      "title": "A dummy event",
-      "date": "2023-02-22",
-      "image": "https://blog.hubspot.de/hubfs/Germany/Blog_images/Optimize_Marketing%20Events%20DACH%202021.jpg",
-      "description": "Join this amazing event and connect with fellow developers."
-    }
-  ]
-}
+{"events":[{"title":"123123123","image":"https://cdn.britannica.com/51/173051-050-4C7EF797/gold-metal-Stacks-bars-Blocks-money-mercantilism.jpg","date":"2024-11-05","description":"123123","id":"a406e08a-772a-4a5e-976d-965a8350375f"},{"title":"1231231","image":"https://lp2m.uma.ac.id/wp-content/uploads/2021/10/Gold.jpeg","date":"2024-10-31","description":"asdasd","id":"6ab5874a-ca76-4336-9f27-18296f3d5ad5"},{"title":"asdasdsad123213123123","image":"https://i.shgcdn.com/19200e5f-1079-4858-b5df-30b3a9d99ae5/-/format/auto/-/preview/3000x3000/-/quality/lighter/","date":"2024-10-31","description":"asdasd","id":"9fb2da97-6b2d-494e-8901-115516e83a1f"},{"id":"e1","title":"A dummy event","date":"2023-02-22","image":"https://blog.hubspot.de/hubfs/Germany/Blog_images/Optimize_Marketing%20Events%20DACH%202021.jpg","description":"Join this amazing event and connect with fellow developers."}]}
