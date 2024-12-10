@@ -1,1 +1,1 @@
-## Section 21 - Building a Multi-Page SPA with React Router
+## Section 22 - Building a Multi-Page SPA with React Router

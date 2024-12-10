@@ -1,1 +1,1 @@
-## Section 22 - Adding Authentication To React Apps
+## Section 23 - Adding Authentication To React Apps
