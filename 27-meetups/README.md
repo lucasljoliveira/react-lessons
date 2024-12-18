@@ -23,4 +23,5 @@ We have two ways of doing that, Static generation and server-side rendering.
         paths: [{params: {id: "actual id in the path (as string)"}}]
     }
 9. API routes: It is special routes/pages, that don't return html code, but json, working as a backend inside the frontend code.
-
+10. We can use the built-in Image componente to render images.
+11. Head componente from next/head can be used to add meta data to the pages, including dynamic ones.
